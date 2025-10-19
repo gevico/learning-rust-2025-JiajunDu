@@ -41,6 +41,16 @@ enum IntoColorError {
 impl TryFrom<(i16, i16, i16)> for Color {
     type Error = IntoColorError;
     fn try_from(tuple: (i16, i16, i16)) -> Result<Self, Self::Error> {
+        let v: Vec<i16> = vec![tuple.0, tuple.1, tuple.2];
+        if v.into_iter().fold(0, |acc, i| acc + if i >= 0 && i <= 255 { 0 } else { 1 }) != 0 {
+            return Err(IntoColorError::IntConversion)
+        } else {
+            Ok(Self {
+                red: tuple.0 as u8,
+                green: tuple.1 as u8,
+                blue: tuple.2 as u8
+            })
+        }
     }
 }
 
@@ -48,6 +58,15 @@ impl TryFrom<(i16, i16, i16)> for Color {
 impl TryFrom<[i16; 3]> for Color {
     type Error = IntoColorError;
     fn try_from(arr: [i16; 3]) -> Result<Self, Self::Error> {
+        if arr.iter().fold(0, |acc, &i| acc + if i >= 0 && i <= 255 { 0 } else { 1 }) != 0 {
+            return Err(IntoColorError::IntConversion)
+        } else {
+            Ok(Self {
+                red: arr[0] as u8,
+                green: arr[1] as u8,
+                blue: arr[2] as u8
+            })
+        }
     }
 }
 
@@ -55,6 +74,18 @@ impl TryFrom<[i16; 3]> for Color {
 impl TryFrom<&[i16]> for Color {
     type Error = IntoColorError;
     fn try_from(slice: &[i16]) -> Result<Self, Self::Error> {
+        if slice.len() != 3 {
+            return Err(IntoColorError::BadLen)
+        }
+        if slice.iter().fold(0, |acc, &i| acc + if i >= 0 && i <= 255 { 0 } else { 1 }) != 0 {
+            return Err(IntoColorError::IntConversion)
+        } else {
+            Ok(Self {
+                red: slice[0] as u8,
+                green: slice[1] as u8,
+                blue: slice[2] as u8
+            })
+        }
     }
 }
 

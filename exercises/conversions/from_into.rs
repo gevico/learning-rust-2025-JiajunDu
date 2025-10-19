@@ -44,6 +44,25 @@ impl Default for Person {
 
 impl From<&str> for Person {
     fn from(s: &str) -> Person {
+        if s.len() == 0 {
+            Person::default()
+        } else {
+            if s.chars().fold(0, |acc, c| acc + if c == ',' {1} else {0}) != 1 {
+                return Person::default()
+            }
+            let v: Vec<&str> = s.split_terminator(',').filter(|x| x.len() != 0).collect();
+            if v.len() != 2 {
+                Person::default()
+            } else {
+                match v[1].parse::<usize>() {
+                    Ok(num) => Person {
+                        name: v[0].to_string(),
+                        age: num,
+                    },
+                    Err(_) => Person::default()
+                }
+            }
+        }
     }
 }
 
