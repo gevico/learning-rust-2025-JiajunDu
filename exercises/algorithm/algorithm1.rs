@@ -7,14 +7,15 @@
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
 use std::vec::*;
+use std::cmp::PartialOrd;
 
 #[derive(Debug)]
-struct Node<T> {
+struct Node<T: PartialOrd> {
     val: T,
     next: Option<NonNull<Node<T>>>,
 }
 
-impl<T> Node<T> {
+impl<T: PartialOrd> Node<T> {
     fn new(t: T) -> Node<T> {
         Node {
             val: t,
@@ -23,19 +24,19 @@ impl<T> Node<T> {
     }
 }
 #[derive(Debug)]
-struct LinkedList<T> {
+struct LinkedList<T: PartialOrd> {
     length: u32,
     start: Option<NonNull<Node<T>>>,
     end: Option<NonNull<Node<T>>>,
 }
 
-impl<T> Default for LinkedList<T> {
+impl<T: PartialOrd> Default for LinkedList<T> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T> LinkedList<T> {
+impl<T: PartialOrd> LinkedList<T> {
     pub fn new() -> Self {
         Self {
             length: 0,
@@ -69,20 +70,52 @@ impl<T> LinkedList<T> {
             },
         }
     }
-	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
-	{
-		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
+
+    fn pop_front(&mut self) -> Option<T> {
+        match self.start {
+            None => None,
+            Some(ptr) => {
+                let t = unsafe { Box::from_raw(ptr.as_ptr()) };
+                self.start = t.next;
+                if self.start == None {
+                    self.end = None;
+                }
+                self.length -= 1;
+                Some(t.val)
+            }
         }
+    }
+
+	pub fn merge(mut list_a:LinkedList<T>, mut list_b:LinkedList<T>) -> Self
+	{
+        let mut result = Self::default();
+        println!("++++++++++++++++");
+        while list_a.length != 0 || list_b.length != 0 {
+            if list_a.length == 0 {
+                while let Some(t) = list_b.pop_front() {
+                    result.add(t);
+                }
+                break;
+            }
+            if list_b.length == 0 {
+                while let Some(t) = list_a.pop_front() {
+                    result.add(t);
+                }
+                break;
+            }
+            if list_a.get(0).unwrap() <= list_b.get(0).unwrap() {
+                result.add(list_a.pop_front().unwrap());
+            } else {
+                result.add(list_b.pop_front().unwrap());
+            }
+        }
+        result
 	}
 }
 
 impl<T> Display for LinkedList<T>
 where
-    T: Display,
+    T: PartialOrd + Display,
 {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self.start {
@@ -94,7 +127,7 @@ where
 
 impl<T> Display for Node<T>
 where
-    T: Display,
+    T: Display + PartialOrd,
 {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self.next {

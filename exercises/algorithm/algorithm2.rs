@@ -72,8 +72,30 @@ impl<T> LinkedList<T> {
             },
         }
     }
-	pub fn reverse(&mut self){
-		// TODO
+
+    fn pop_front(&mut self) -> Option<T> {
+        match self.start {
+            None => None,
+            Some(ptr) => {
+                let t = unsafe { Box::from_raw(ptr.as_ptr()) };
+                self.start = t.next;
+                if self.start == None {
+                    self.end = None;
+                }
+                self.length -= 1;
+                Some(t.val)
+            }
+        }
+    }
+
+	pub fn reverse(&mut self) {
+        let mut values: Vec<T> = vec![];
+        while let Some(t) = self.pop_front() {
+            values.push(t);
+        }
+        while let Some(t) = values.pop() {
+            self.add(t);
+        }
 	}
 }
 

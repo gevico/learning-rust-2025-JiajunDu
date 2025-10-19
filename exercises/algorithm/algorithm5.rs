@@ -4,11 +4,11 @@
 */
 
 //I AM NOT DONE
-use std::collections::VecDeque;
+use std::collections::{VecDeque, HashSet};
 
 // Define a graph
 struct Graph {
-    adj: Vec<Vec<usize>>, 
+    adj: Vec<Vec<usize>>,
 }
 
 impl Graph {
@@ -30,7 +30,21 @@ impl Graph {
         
 		//TODO
 
-        let mut visit_order = vec![];
+        let mut visit_order = vec![start];
+        let mut passed: HashSet<usize> = HashSet::new();
+        passed.insert(start);
+        let mut queue: VecDeque<usize> = VecDeque::new();
+        queue.push_back(start);
+        while let Some(index) = queue.pop_front() {
+            for &next in self.adj[index].iter() {
+                if passed.contains(&next) {
+                    continue;
+                }
+                passed.insert(next);
+                visit_order.push(next);
+                queue.push_back(next);
+            }
+        }
         visit_order
     }
 }

@@ -9,7 +9,7 @@ use std::default::Default;
 
 pub struct Heap<T>
 where
-    T: Default,
+    T: Default + Clone,
 {
     count: usize,
     items: Vec<T>,
@@ -18,7 +18,7 @@ where
 
 impl<T> Heap<T>
 where
-    T: Default,
+    T: Default + Clone,
 {
     pub fn new(comparator: fn(&T, &T) -> bool) -> Self {
         Self {
@@ -38,6 +38,20 @@ where
 
     pub fn add(&mut self, value: T) {
         //TODO
+        self.items.push(value);
+        self.count += 1;
+        let mut index: usize = self.items.len() - 1;
+        while index != 1 {
+            let parent = self.parent_idx(index);
+            if (self.comparator)(&self.items[index], &self.items[parent]) {
+                let tmp = self.items[parent].clone();
+                self.items[parent] = self.items[index].clone();
+                self.items[index] = tmp.clone();
+            } else {
+                break;
+            }
+            index = parent;
+        }
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -64,7 +78,7 @@ where
 
 impl<T> Heap<T>
 where
-    T: Default + Ord,
+    T: Default + Ord + Clone,
 {
     /// Create a new MinHeap
     pub fn new_min() -> Self {
@@ -79,13 +93,46 @@ where
 
 impl<T> Iterator for Heap<T>
 where
-    T: Default,
+    T: Default + Clone,
 {
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
         //TODO
-		None
+        if self.is_empty() {
+            return None;
+        } else {
+            let value = self.items[1].clone();
+            self.items[1] = self.items[self.count].clone();
+            self.count -= 1;
+            let mut index: usize = 1;
+            loop {
+                let left_index = self.left_child_idx(index);
+                let right_index = self.right_child_idx(index);
+                let mut left_bool = false;
+                if left_index > self.count {
+                    break;
+                } else if right_index <= self.count {
+                    left_bool = (self.comparator)(&self.items[left_index], &self.items[right_index]);
+                } else {
+                    left_bool = true;
+                }
+                if left_bool && (self.comparator)(&self.items[left_index], &self.items[index]) {
+                    let tmp = self.items[left_index].clone();
+                    self.items[left_index] = self.items[index].clone();
+                    self.items[index] = tmp.clone();
+                    index = left_index;
+                } else if !left_bool && (self.comparator)(&self.items[right_index], &self.items[index]) {
+                    let tmp = self.items[right_index].clone();
+                    self.items[right_index] = self.items[index].clone();
+                    self.items[index] = tmp.clone();
+                    index = right_index;
+                } else {
+                    break;
+                }
+            }
+            Some(value)
+        }
     }
 }
 
@@ -95,7 +142,7 @@ impl MinHeap {
     #[allow(clippy::new_ret_no_self)]
     pub fn new<T>() -> Heap<T>
     where
-        T: Default + Ord,
+        T: Default + Ord + Clone,
     {
         Heap::new(|a, b| a < b)
     }
@@ -107,7 +154,7 @@ impl MaxHeap {
     #[allow(clippy::new_ret_no_self)]
     pub fn new<T>() -> Heap<T>
     where
-        T: Default + Ord,
+        T: Default + Ord + Clone,
     {
         Heap::new(|a, b| a > b)
     }

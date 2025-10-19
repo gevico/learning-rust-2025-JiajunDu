@@ -51,12 +51,55 @@ where
     // Insert a value into the BST
     fn insert(&mut self, value: T) {
         //TODO
+        if self.root.is_none() {
+            self.root = Some(Box::new(TreeNode::new(value)));
+        } else {
+            let mut node_ref = self.root.as_mut().unwrap();
+            loop {
+                if value < node_ref.value {
+                    if node_ref.left.is_none() {
+                        node_ref.left = Some(Box::new(TreeNode::new(value)));
+                        break;
+                    } else {
+                        node_ref = node_ref.left.as_mut().unwrap();
+                    }
+                } else if value > node_ref.value {
+                    if node_ref.right.is_none() {
+                        node_ref.right = Some(Box::new(TreeNode::new(value)));
+                        break;
+                    } else {
+                        node_ref = node_ref.right.as_mut().unwrap();
+                    }
+                } else {
+                   break;
+                }
+            }
+        }
     }
 
     // Search for a value in the BST
     fn search(&self, value: T) -> bool {
         //TODO
-        true
+        if self.root.is_none() {
+            return false;
+        }
+        let mut node_ref = self.root.as_ref().unwrap();
+        loop {
+            if value == node_ref.value {
+                return true;
+            } else if value < node_ref.value {
+                if node_ref.left.is_none() {
+                    break;
+                }
+                node_ref = node_ref.left.as_ref().unwrap();
+            } else {
+                if node_ref.right.is_none() {
+                    break;
+                }
+                node_ref = node_ref.right.as_ref().unwrap();
+            }
+        }
+        false
     }
 }
 
